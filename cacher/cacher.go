@@ -2,6 +2,7 @@ package cacher
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/go-pg/pg/v10"
 )
@@ -50,7 +51,7 @@ func Start(cacher Cacher, db *pg.DB, heightInterval uint64, startHeightOpt *Star
 			lastScanHeight = startHeightOpt.Height
 		} else {
 			dataLog := new(DataLog)
-			err := db.Model(dataLog).Order("id DESC").Limit(1).Select()
+			err := db.Model(dataLog).Order("height DESC").Limit(1).Select()
 			if err != nil {
 				fmt.Printf("Error:%s", err.Error())
 			}
@@ -61,6 +62,8 @@ func Start(cacher Cacher, db *pg.DB, heightInterval uint64, startHeightOpt *Star
 		if err != nil {
 			fmt.Printf("Error:%s", err.Error())
 		}
+
+		time.Sleep(10 * time.Second)
 	}
 }
 

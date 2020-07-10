@@ -1,27 +1,30 @@
 package keys
 
 import (
-	"fmt"
 	"strings"
-
-	"github.com/ethereum/go-ethereum/common/hexutil"
 )
-
-type Key string
 
 const (
 	Separator string = "_"
 
-	ConsulsKey           Key = "consuls"
-	PrevConsulsKey       Key = "prev_consuls"
-	ConsulsSignKey       Key = "consuls_sing"
-	OraclesSignNebulaKey Key = "oracles_sign"
+	PulseKey   string = "pulse"
+	ConsulsKey string = "consuls"
+	OraclesKey string = "oracles"
+	ScoresKey  string = "scores"
 )
 
-func FormPrevConsulsKey() string {
-	return string(PrevConsulsKey)
+func FormConsuls() string {
+	return ConsulsKey
 }
 
-func FormOraclesSignNebulaKey(validatorAddress []byte, nebulaId []byte, roundId int64) string {
-	return strings.Join([]string{string(OraclesSignNebulaKey), hexutil.Encode(validatorAddress), hexutil.Encode(nebulaId), fmt.Sprintf("%d", roundId)}, Separator)
+func FormScores(validator string) string {
+	return strings.Join([]string{ScoresKey, validator}, Separator)
+}
+
+func FormOraclesByNebula(nebula string) string {
+	return strings.Join([]string{OraclesKey, nebula}, Separator)
+}
+
+func FormPulse(nebulaId string, height string) string {
+	return strings.Join([]string{PulseKey, nebulaId, height}, Separator)
 }

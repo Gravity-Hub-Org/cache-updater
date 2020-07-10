@@ -3,8 +3,11 @@ package cacher
 import (
 	"encoding/binary"
 	"encoding/json"
+	"strings"
 
 	"github.com/ethereum/go-ethereum/common/hexutil"
+
+	cacheKeys "cache-updater/keys"
 
 	"github.com/Gravity-Hub-Org/proof-of-concept/common/keys"
 	"github.com/mr-tron/base58"
@@ -19,10 +22,10 @@ const (
 
 type LedgerCacher struct {
 	client  *rpchttp.HTTP
-	nebulae map[CacherType]string
+	nebulae map[CacherType][]string
 }
 
-func NewLedgerCache(host string, nebulae []string) (*LedgerCacher, error) {
+func NewLedgerCache(host string, nebulae map[CacherType][]string) (*LedgerCacher, error) {
 	client, err := rpchttp.New(host, "/websocket")
 	if err != nil {
 		return nil, err
@@ -59,7 +62,7 @@ func (cacher *LedgerCacher) GetData(height uint64) (map[string]Data, error) {
 		return nil, err
 	}
 
-	var consuls map[string]interface{}
+	var consuls []interface{}
 	if rs.Response.Value != nil {
 		err = json.Unmarshal(rs.Response.Value, &consuls)
 		if err != nil {
@@ -67,69 +70,74 @@ func (cacher *LedgerCacher) GetData(height uint64) (map[string]Data, error) {
 		}
 	}
 
-	data["consuls"] = Data{
+	data[keys.FormConsulsKey()] = Data{
 		Type:  JsonType,
 		Value: consuls,
 	}
 
-	for t, nebula := range cacher.nebulae {
-		var nebulaId []byte
-		var err error
-		switch t {
-		case Waves:
-			nebulaId, err = base58.Decode(nebula)
+	for t, v := range cacher.nebulae {
+		for _, nebula := range v {
+			var nebulaId []byte
+			var err error
+			switch t {
+			case Waves:
+				nebulaId, err = base58.Decode(nebula)
+				if err != nil {
+					return nil, err
+				}
+			case Ethereum:
+				nebulaId, err = hexutil.Decode(nebula)
+				if err != nil {
+					return nil, err
+				}
+			}
+
+			//Oracles by nebula
+			rs, err := cacher.client.ABCIQuery(keyPath, []byte(keys.FormOraclesByNebulaKey(nebulaId)))
 			if err != nil {
 				return nil, err
 			}
-		case Ethereum:
-			nebulaId, err = hexutil.Decode(nebula)
+
+			var oracles map[string]string
+			if rs.Response.Value != nil {
+				err = json.Unmarshal(rs.Response.Value, &oracles)
+				if err != nil {
+					return nil, err
+				}
+			}
+
+			b, err := json.Marshal(oracles)
 			if err != nil {
 				return nil, err
 			}
-		}
 
-		//Oracles by nebula
-		rs, err := cacher.client.ABCIQuery(keyPath, []byte(keys.FormOraclesByNebulaKey(nebulaId)))
-		if err != nil {
-			return nil, err
-		}
+			data[cacheKeys.FormOraclesByNebula(nebula)] = Data{
+				Type:  JsonType,
+				Value: b,
+			}
 
-		var oracles map[string]string
-		if rs.Response.Value != nil {
-			err = json.Unmarshal(rs.Response.Value, &oracles)
+			//Scores
+			rs, err = cacher.client.ABCIQuery(prefixKey, []byte(keys.ScoreKey))
 			if err != nil {
 				return nil, err
 			}
-		}
 
-		for k, v := range oracles {
-			data[nebula+"_oracle_"+k] = Data{
-				Type:  StringType,
-				Value: v,
+			var scores map[string][]byte
+			if rs.Response.Value != nil {
+				err = json.Unmarshal(rs.Response.Value, &scores)
+				if err != nil {
+					return nil, err
+				}
+			}
+
+			for k, v := range scores {
+				validator := strings.Split(k, "_")[1]
+				data[cacheKeys.FormScores(validator)] = Data{
+					Type:  IntType,
+					Value: binary.BigEndian.Uint64(v),
+				}
 			}
 		}
-
-		//Scores
-		rs, err = cacher.client.ABCIQuery(prefixKey, []byte(keys.ScoreKey))
-		if err != nil {
-			return nil, err
-		}
-
-		var scores map[string][]byte
-		if rs.Response.Value != nil {
-			err = json.Unmarshal(rs.Response.Value, &scores)
-			if err != nil {
-				return nil, err
-			}
-		}
-
-		for k, v := range scores {
-			data[k] = Data{
-				Type:  IntType,
-				Value: binary.BigEndian.Uint64(v),
-			}
-		}
-
 	}
 
 	return nil, nil

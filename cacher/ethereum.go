@@ -2,6 +2,7 @@ package cacher
 
 import (
 	"cache-updater/contracts"
+	"cache-updater/keys"
 	"context"
 	"fmt"
 	"math/big"
@@ -74,7 +75,7 @@ func (cacher *EthereumCacher) GetData(height uint64) (map[string]Data, error) {
 		}
 
 		for iterator.Next() {
-			data[nebula+"_"+fmt.Sprintf("%s", iterator.Event.Height)] = Data{
+			data[keys.FormPulse(nebula, fmt.Sprintf("%s", iterator.Event.Height))] = Data{
 				Type:  StringType,
 				Value: hexutil.Encode(iterator.Event.DataHash[:]),
 			}

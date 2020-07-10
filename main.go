@@ -45,19 +45,19 @@ func main() {
 		}
 	}
 
-	ethereum, err := cacher.NewEthereumCacher(ctx, cfg.Chains[string(cacher.Ethereum)].Host, cfg.Chains[string(cacher.Ethereum)].Nebulae)
+	ethereum, err := cacher.NewEthereumCacher(ctx, cfg.Chains[string(cacher.Ethereum)].Host, cfg.Nebulae[cacher.Ethereum])
 	if err != nil {
 		panic(err)
 	}
 	go cacher.Start(ethereum, db, cfg.Chains[string(cacher.Ethereum)].IntervalHeight, startHeightOpt)
 
-	waves, err := cacher.NewWavesCacher(cfg.Chains[string(cacher.Waves)].Host, cfg.Chains[string(cacher.Waves)].Nebulae)
+	waves, err := cacher.NewWavesCacher(cfg.Chains[string(cacher.Waves)].Host, cfg.Nebulae[cacher.Waves])
 	if err != nil {
 		panic(err)
 	}
 	go cacher.Start(waves, db, cfg.Chains[string(cacher.Ethereum)].IntervalHeight, startHeightOpt)
 
-	ledger, err := cacher.NewLedgerCache(cfg.Chains[string(cacher.Ledger)].Host, cfg.Chains[string(cacher.Ethereum)].Nebulae, cfg.Chains[string(cacher.Waves)].Nebulae)
+	ledger, err := cacher.NewLedgerCache(cfg.Chains[string(cacher.Ledger)].Host, cfg.Nebulae)
 	if err != nil {
 		panic(err)
 	}

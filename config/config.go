@@ -1,6 +1,7 @@
 package config
 
 import (
+	"cache-updater/cacher"
 	"encoding/json"
 	"io/ioutil"
 )
@@ -13,13 +14,14 @@ type DB struct {
 }
 
 type Chain struct {
-	Nebulae        []string
 	IntervalHeight uint64
 	Host           string
 }
 type Config struct {
 	DB
 	Chains map[string]Chain
+
+	Nebulae map[cacher.CacherType][]string
 }
 
 func Load(filename string) (Config, error) {

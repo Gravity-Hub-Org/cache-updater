@@ -1,6 +1,7 @@
 package cacher
 
 import (
+	"cache-updater/keys"
 	"context"
 	"fmt"
 
@@ -50,13 +51,13 @@ func (cacher *WavesCacher) GetBlockHash(height uint64) (string, error) {
 func (cacher *WavesCacher) GetData(height uint64) (map[string]Data, error) {
 	data := make(map[string]Data)
 	for _, nebula := range cacher.nebulae {
-		pulseKey := fmt.Sprintf("%d", height)
-		pulse, err := cacher.helper.GetStateByAddressAndKey(nebula, pulseKey)
+		heightString := fmt.Sprintf("%d", height)
+		pulse, err := cacher.helper.GetStateByAddressAndKey(nebula, heightString)
 		if err != nil {
 			return nil, err
 		}
 
-		data[nebula+"_"+pulseKey] = Data{
+		data[keys.FormPulse(nebula, heightString)] = Data{
 			Type:  StringType,
 			Value: pulse,
 		}
