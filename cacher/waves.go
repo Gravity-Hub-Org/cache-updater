@@ -16,14 +16,14 @@ type WavesCacher struct {
 	ctx     context.Context
 }
 
-func NewWavesCacher(host string, nebulae []string) (*WavesCacher, error) {
+func NewWavesCacher(host string, nebulae []string, ctx context.Context) (*WavesCacher, error) {
 	helper := helpers.New(host, "")
 	wavesClient, err := client.NewClient(client.Options{ApiKey: "", BaseUrl: host})
 	if err != nil {
 		return nil, err
 	}
 
-	return &WavesCacher{client: wavesClient, helper: &helper, nebulae: nebulae}, nil
+	return &WavesCacher{client: wavesClient, helper: &helper, nebulae: nebulae, ctx: ctx}, nil
 }
 
 func (cacher *WavesCacher) GetType() CacherType {
@@ -45,7 +45,7 @@ func (cacher *WavesCacher) GetBlockHash(height uint64) (string, error) {
 		return "", err
 	}
 
-	return b.ID.String(), nil
+	return b.Signature.String(), nil
 }
 
 func (cacher *WavesCacher) GetData(height uint64) (map[string]Data, error) {
@@ -57,6 +57,9 @@ func (cacher *WavesCacher) GetData(height uint64) (map[string]Data, error) {
 			return nil, err
 		}
 
+		if pulse == nil {
+			return data, nil
+		}
 		data[keys.FormPulse(nebula, heightString)] = Data{
 			Type:  StringType,
 			Value: pulse,

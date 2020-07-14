@@ -18,7 +18,7 @@ type Chain struct {
 	Host           string
 }
 type Config struct {
-	DB
+	DB     DB
 	Chains map[string]Chain
 
 	Nebulae map[cacher.CacherType][]string

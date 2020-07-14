@@ -4,7 +4,11 @@ import (
 	"cache-updater/cacher"
 	"cache-updater/config"
 	"context"
+	"crypto/tls"
 	"flag"
+	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/go-pg/pg/v10"
 )
@@ -26,11 +30,15 @@ func main() {
 	}
 
 	ctx := context.Background()
+
 	db := pg.Connect(&pg.Options{
 		Addr:     cfg.DB.Addr,
 		User:     cfg.DB.User,
 		Password: cfg.DB.Password,
 		Database: cfg.DB.Database,
+		TLSConfig: &tls.Config{
+			InsecureSkipVerify: true,
+		},
 	})
 	defer db.Close()
 
@@ -44,14 +52,13 @@ func main() {
 			Height: startHeight,
 		}
 	}
-
 	ethereum, err := cacher.NewEthereumCacher(ctx, cfg.Chains[string(cacher.Ethereum)].Host, cfg.Nebulae[cacher.Ethereum])
 	if err != nil {
 		panic(err)
 	}
 	go cacher.Start(ethereum, db, cfg.Chains[string(cacher.Ethereum)].IntervalHeight, startHeightOpt)
 
-	waves, err := cacher.NewWavesCacher(cfg.Chains[string(cacher.Waves)].Host, cfg.Nebulae[cacher.Waves])
+	waves, err := cacher.NewWavesCacher(cfg.Chains[string(cacher.Waves)].Host, cfg.Nebulae[cacher.Waves], ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -62,4 +69,11 @@ func main() {
 		panic(err)
 	}
 	go cacher.Start(ledger, db, 0, startHeightOpt)
+
+	for {
+		c := make(chan os.Signal, 1)
+		signal.Notify(c, os.Interrupt, syscall.SIGTERM)
+		<-c
+		os.Exit(0)
+	}
 }

@@ -53,14 +53,14 @@ func Start(cacher Cacher, db *pg.DB, heightInterval uint64, startHeightOpt *Star
 			dataLog := new(DataLog)
 			err := db.Model(dataLog).Order("height DESC").Limit(1).Select()
 			if err != nil {
-				fmt.Printf("Error:%s", err.Error())
+				fmt.Printf("Error:%s\n", err.Error())
 			}
 			lastScanHeight = dataLog.Height
 		}
 
 		err := scan(cacher, db, heightInterval, lastScanHeight)
 		if err != nil {
-			fmt.Printf("Error:%s", err.Error())
+			fmt.Printf("Error:%s\n", err.Error())
 		}
 
 		time.Sleep(10 * time.Second)
