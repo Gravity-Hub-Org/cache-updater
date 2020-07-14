@@ -6,14 +6,25 @@
 		"Database": ""
 	},
 	"Chains": {
-		"": {
+		"ledger": {
+			"IntervalHeight": 0,
+			"Host": "http://164.90.191.250:26657"
+		},
+		"ethereum": {
 			"IntervalHeight": 5,
-			"Host": "0.0.0.0:5000"
+			"Host": "http://164.90.191.250:8545"
+		},
+		"waves": {
+			"IntervalHeight": 30,
+			"Host": "https://testnode1.wavesnodes.com"
 		}
 	},
 	"Nebulae": {
-		"": [
-			""
+		"waves": [
+			"3N666c9jMPp2LgthP7QpdaHbfcyCXp6pfk2"
+		],
+		"ethereum" : [
+
 		]
 	}
 }

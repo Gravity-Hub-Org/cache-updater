@@ -62,7 +62,7 @@ func (cacher *WavesCacher) GetData(height uint64) (map[string]Data, error) {
 		}
 		data[keys.FormPulse(nebula, heightString)] = Data{
 			Type:  StringType,
-			Value: pulse,
+			Value: pulse.Value.(string),
 		}
 	}
 	return data, nil

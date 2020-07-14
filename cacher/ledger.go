@@ -70,9 +70,14 @@ func (cacher *LedgerCacher) GetData(height uint64) (map[string]Data, error) {
 		}
 	}
 
+	b, err := json.Marshal(consuls)
+	if err != nil {
+		return nil, err
+	}
+
 	data[keys.FormConsulsKey()] = Data{
 		Type:  JsonType,
-		Value: consuls,
+		Value: b,
 	}
 
 	for t, v := range cacher.nebulae {
@@ -140,5 +145,5 @@ func (cacher *LedgerCacher) GetData(height uint64) (map[string]Data, error) {
 		}
 	}
 
-	return nil, nil
+	return data, nil
 }

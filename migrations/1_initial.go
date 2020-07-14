@@ -16,11 +16,12 @@ func init() {
 			_, err := db.Exec(fmt.Sprintf(
 				`
 				CREATE TABLE %s (
-					blockHash text,
 					key text,
+					chain text,
+					block text,
 					type text,
 					value text,
-					height bigint
+					height int 
 				);
 				`, tableName))
 			return err

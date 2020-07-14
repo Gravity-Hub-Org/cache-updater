@@ -19,9 +19,11 @@ const (
 
 func main() {
 	var confFileName string
-	var startHeight uint64
+	var startEthHeight, startWavesHeight, startLedgerHeight uint64
 	flag.StringVar(&confFileName, "config", DefaultConfigFileName, "set config path")
-	flag.Uint64Var(&startHeight, "height", 0, "set start scan height")
+	flag.Uint64Var(&startEthHeight, "ethHeight", 0, "set start scan height")
+	flag.Uint64Var(&startWavesHeight, "wavesHeight", 0, "set start scan height")
+	flag.Uint64Var(&startLedgerHeight, "ledgerHeight", 0, "set start scan height")
 	flag.Parse()
 
 	cfg, err := config.Load(confFileName)
@@ -46,29 +48,41 @@ func main() {
 		panic(err)
 	}
 
-	var startHeightOpt *cacher.StartHeightOpt
-	if startHeight != 0 {
-		startHeightOpt = &cacher.StartHeightOpt{
-			Height: startHeight,
+	var startEthHeightOpt *cacher.StartHeightOpt
+	if startEthHeight != 0 {
+		startEthHeightOpt = &cacher.StartHeightOpt{
+			Height: startEthHeight,
 		}
 	}
 	ethereum, err := cacher.NewEthereumCacher(ctx, cfg.Chains[string(cacher.Ethereum)].Host, cfg.Nebulae[cacher.Ethereum])
 	if err != nil {
 		panic(err)
 	}
-	go cacher.Start(ethereum, db, cfg.Chains[string(cacher.Ethereum)].IntervalHeight, startHeightOpt)
+	go cacher.Start(ethereum, db, cfg.Chains[string(cacher.Ethereum)].IntervalHeight, startEthHeightOpt)
 
+	var startWavesHeightOpt *cacher.StartHeightOpt
+	if startWavesHeight != 0 {
+		startWavesHeightOpt = &cacher.StartHeightOpt{
+			Height: startWavesHeight,
+		}
+	}
 	waves, err := cacher.NewWavesCacher(cfg.Chains[string(cacher.Waves)].Host, cfg.Nebulae[cacher.Waves], ctx)
 	if err != nil {
 		panic(err)
 	}
-	go cacher.Start(waves, db, cfg.Chains[string(cacher.Ethereum)].IntervalHeight, startHeightOpt)
+	go cacher.Start(waves, db, cfg.Chains[string(cacher.Ethereum)].IntervalHeight, startWavesHeightOpt)
 
+	var startLedgerHeightOpt *cacher.StartHeightOpt
+	if startLedgerHeight != 0 {
+		startLedgerHeightOpt = &cacher.StartHeightOpt{
+			Height: startLedgerHeight,
+		}
+	}
 	ledger, err := cacher.NewLedgerCache(cfg.Chains[string(cacher.Ledger)].Host, cfg.Nebulae)
 	if err != nil {
 		panic(err)
 	}
-	go cacher.Start(ledger, db, 0, startHeightOpt)
+	go cacher.Start(ledger, db, 0, startLedgerHeightOpt)
 
 	for {
 		c := make(chan os.Signal, 1)
