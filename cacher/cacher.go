@@ -129,7 +129,7 @@ func getData(cacher Cacher, db *pg.DB, height uint64, blockHash string) error {
 			Height:    height,
 		})
 
-		err := db.Insert(db)
+		err := db.Insert(dataLogs)
 		if err != nil {
 			return err
 		}

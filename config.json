@@ -1,0 +1,19 @@
+{
+	"DB": {
+		"Addr": "",
+		"User": "",
+		"Password": "",
+		"Database": ""
+	},
+	"Chains": {
+		"": {
+			"IntervalHeight": 5,
+			"Host": "0.0.0.0:5000"
+		}
+	},
+	"Nebulae": {
+		"": [
+			""
+		]
+	}
+}
