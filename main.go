@@ -3,6 +3,7 @@ package main
 import (
 	"cache-updater/cacher"
 	"cache-updater/config"
+	"cache-updater/consumers"
 	"context"
 	"crypto/tls"
 	"flag"
@@ -83,6 +84,13 @@ func main() {
 		panic(err)
 	}
 	go cacher.Start(ledger, db, 0, startLedgerHeightOpt)
+
+	pgConsumer := &consumers.PGDBConsumer{
+		DestinationDB: nil,
+		ConsumerDB:    db,
+		NebulaeMap: cfg.Nebulae,
+	}
+	go pgConsumer.Start()
 
 	for {
 		c := make(chan os.Signal, 1)
