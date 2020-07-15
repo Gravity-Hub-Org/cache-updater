@@ -21,12 +21,17 @@ type PGDBConsumer struct {
 func (c *PGDBConsumer) consume () {
 	nebulas, _ := c.consumerDBHelper.Nebulae()
 	nodes, _ := c.consumerDBHelper.Nodes()
+	stats, _ := c.consumerDBHelper.CommonStatus()
 
-	err := c.DestinationDB.Insert(nebulas)
+	err := c.DestinationDB.Insert(&nebulas)
 	if err != nil {
 		println(err.Error())
 	}
-	err = c.DestinationDB.Insert(nodes)
+	err = c.DestinationDB.Insert(&nodes)
+	if err != nil {
+		println(err.Error())
+	}
+	err = c.DestinationDB.Insert(&stats)
 	if err != nil {
 		println(err.Error())
 	}
