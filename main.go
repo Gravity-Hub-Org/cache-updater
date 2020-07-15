@@ -90,7 +90,7 @@ func main() {
 		ConsumerDB:    db,
 		NebulaeMap: cfg.Nebulae,
 	}
-	go pgConsumer.Start()
+	go pgConsumer.Start(cfg.Nebulae)
 
 	for {
 		c := make(chan os.Signal, 1)

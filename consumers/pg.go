@@ -22,8 +22,14 @@ func (c *PGDBConsumer) consume () {
 	nebulas, _ := c.consumerDBHelper.Nebulae()
 	nodes, _ := c.consumerDBHelper.Nodes()
 
-	_ = c.DestinationDB.Insert(nebulas)
-	_ = c.DestinationDB.Insert(nodes)
+	err := c.DestinationDB.Insert(nebulas)
+	if err != nil {
+		println(err.Error())
+	}
+	err = c.DestinationDB.Insert(nodes)
+	if err != nil {
+		println(err.Error())
+	}
 }
 
 func (c *PGDBConsumer) startConsume () {
@@ -32,14 +38,15 @@ func (c *PGDBConsumer) startConsume () {
 	time.AfterFunc(3*time.Second, c.startConsume)
 }
 
-func (c *PGDBConsumer) Start() {
+func (c *PGDBConsumer) Start(nebulaeMap map[cacher.CacherType][]string) {
 	c.DestinationDB = c.ConnectToPG()
 	
 	c.consumerDBHelper = &db.DBHelper{
 		Db:         c.ConsumerDB,
-		NebulaeMap: nil,
+		NebulaeMap: nebulaeMap,
 	}
 	c.timeout = 3 * time.Second
+	c.startConsume()
 }
 
 func (c *PGDBConsumer) GetDBCredentials () (string, string, string, string, string) {
