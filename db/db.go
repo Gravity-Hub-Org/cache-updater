@@ -24,14 +24,17 @@ func (helper *DBHelper) Nebulae() ([]model.Nebula, error) {
 		for i, nebula := range v {
 			nodes, err := helper.validatorsByNebula(nebula)
 			if err != nil {
-				return nil, err
+				return nebulae, err
 			}
 
+			if len(nodes) <= 0 {
+				return nebulae, err
+			}
 			var score int
 			for _, v := range nodes {
 				vScore, err := helper.Score(v)
 				if err != nil {
-					return nil, err
+					return nebulae, err
 				}
 				score += int(vScore)
 			}
@@ -69,14 +72,30 @@ func (helper *DBHelper) Nodes() ([]model.Node, error) {
 		return nil, err
 	}
 
-	for i, v := range nodeAddresses {
-		vScore, err := helper.Score(v)
+	for i, address := range nodeAddresses {
+		vScore, err := helper.Score(address)
 		if err != nil {
 			return nil, err
 		}
 
+		var nebulae []string
+		for _, v := range helper.NebulaeMap {
+			for _, nebula := range v {
+				nodes, err := helper.validatorsByNebula(nebula)
+				if err != nil {
+					return nil, err
+				}
+
+				for _, node := range nodes {
+					if address == node {
+						nebulae = append(nebulae, nebula)
+					}
+				}
+			}
+		}
+
 		nodes = append(nodes, model.Node{
-			Address:       v,
+			Address:       address,
 			Name:          fmt.Sprintf("Test Node #%d", i),
 			Score:         model.Score(vScore),
 			Description:   "Test nebula",
@@ -84,7 +103,7 @@ func (helper *DBHelper) Nodes() ([]model.Node, error) {
 			DepositChain:  model.WAVES_TARGET_CHAIN,
 			JoinedAt:      time.Now().Unix(),
 			LockedUntil:   time.Now().Unix(),
-			NebulasUsing:  []string{},
+			NebulasUsing:  nebulae,
 		})
 	}
 
@@ -161,16 +180,13 @@ func (helper *DBHelper) nodeAddresses() ([]string, error) {
 func (helper *DBHelper) validatorsByNebula(nebula string) ([]string, error) {
 	var result []string
 	consulsData := new(cacher.DataLog)
-	err := helper.Db.Model(consulsData).Where("key = ?", keys.FormOraclesByNebula(nebula)).Order("height DESC").Limit(1).Select()
-	if err != nil {
-		return nil, err
-	}
+	helper.Db.Model(consulsData).Where("key = ?", keys.FormOraclesByNebula(nebula)).Order("height DESC").Limit(1).Select()
 
 	var oracles map[string]string
 	if consulsData.Key != "" {
 		b := []byte(consulsData.Value)
 
-		err = json.Unmarshal(b, &oracles)
+		err := json.Unmarshal(b, &oracles)
 		if err != nil {
 			return nil, err
 		}
