@@ -51,12 +51,12 @@ func (helper *DBHelper) Nebulae() ([]model.Nebula, error) {
 			nebulae = append(nebulae, model.Nebula{
 				Address:         nebula,
 				Status:          model.NebulaActiveStatus,
-				Name:            fmt.Sprintf("Test Nebula #%d", i),
+				Name:            fmt.Sprintf("Test Nebula #%d", i + chainType),
 				Score:           model.Score(score),
-				Description:     "Test nebula",
+				Description:     "A demo network test nebula that provides BTC/USD price data.",
 				SubscriptionFee: "10",
 				NodesUsing:      nodes,
-				Regularity:      0,
+				Regularity:      1,
 				TargetChain:     chainType,
 			})
 		}

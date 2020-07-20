@@ -3,6 +3,8 @@ package consumers
 import (
 	"cache-updater/cacher"
 	"cache-updater/db"
+	"crypto/tls"
+	"github.com/Gravity-Hub-Org/gravity-node-api-mockup/v2/model"
 	"github.com/go-pg/pg/v10"
 	"github.com/joho/godotenv"
 	"os"
@@ -21,22 +23,41 @@ type PGDBConsumer struct {
 func (c *PGDBConsumer) consume () {
 	nebulas, _ := c.consumerDBHelper.Nebulae()
 	nodes, _ := c.consumerDBHelper.Nodes()
-	stats, _ := c.consumerDBHelper.CommonStatus()
 
-	err := c.DestinationDB.Insert(&nebulas)
-	if err != nil {
-		println(err.Error())
+	for _, nebula := range nebulas {
+		searchNebula := new(model.Nebula)
+		c.DestinationDB.Model(searchNebula).Where("address = ?", nebula.Address).Select()
+
+		if searchNebula.Address == "" {
+			err := c.DestinationDB.Insert(&nebula)
+			if err != nil {
+				println(err.Error())
+			}
+		} else {
+			_, err := c.DestinationDB.Model(searchNebula).Where("address = ?", nebula.Address).Update(&nebula)
+			if err != nil {
+				println(err.Error())
+			}
+		}
 	}
 
-	err = c.DestinationDB.Insert(&nodes)
-	if err != nil {
-		println(err.Error())
+	for _, node := range nodes {
+		searchNode := new(model.Node)
+		c.DestinationDB.Model(searchNode).Where("address = ?", node.Address).Select()
+
+		if searchNode.Address == "" {
+			err := c.DestinationDB.Insert(&node)
+			if err != nil {
+				println(err.Error())
+			}
+		} else {
+			_, err := c.DestinationDB.Model(searchNode).Where("address = ?", node.Address).Update(&node)
+			if err != nil {
+				println(err.Error())
+			}
+		}
 	}
 
-	err = c.DestinationDB.Insert(&stats)
-	if err != nil {
-		println(err.Error())
-	}
 }
 
 func (c *PGDBConsumer) startConsume () {
@@ -85,6 +106,9 @@ func (c *PGDBConsumer) ConnectToPG () *pg.DB {
 		User:     dbuser,
 		Password: dbpass,
 		Database: dbdatabase,
+		TLSConfig: &tls.Config{
+			InsecureSkipVerify: true,
+		},
 	})
 	return db
 }

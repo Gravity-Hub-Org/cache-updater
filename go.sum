@@ -20,8 +20,12 @@ github.com/ChainSafe/go-schnorrkel v0.0.0-20200405005733-88cbf1b4c40d h1:nalkkPQ
 github.com/ChainSafe/go-schnorrkel v0.0.0-20200405005733-88cbf1b4c40d/go.mod h1:URdX5+vg25ts3aCh8H5IFZybJYKWhJHYMTnf+ULtoC4=
 github.com/DataDog/sketches-go v0.0.0-20190923095040-43f19ad77ff7 h1:qELHH0AWCvf98Yf+CNIJx9vOZOfHFDDzgDRYsnNk/vs=
 github.com/DataDog/sketches-go v0.0.0-20190923095040-43f19ad77ff7/go.mod h1:Q5DbzQ+3AkgGwymQO7aZFNP7ns2lZKGtvRBzRXfdi60=
+github.com/Gravity-Hub-Org/gravity-node-api-mockup v0.0.0-20200706093008-54a322e56ea0 h1:FrhhCouzXR6fis5KHJouP7DhEVlm+QFuepONFqI8Uag=
+github.com/Gravity-Hub-Org/gravity-node-api-mockup v0.0.0-20200706093008-54a322e56ea0/go.mod h1:N+LWMdsxuo4Ari/kFUdK/VA/wuBIdZXVg51o8KU9rJ0=
 github.com/Gravity-Hub-Org/gravity-node-api-mockup/v2 v2.0.0-20200714121546-25953225318e h1:HSfuqZarmNheDc+bVRreDpSAD6eysfG+tSoC6vLyeVs=
 github.com/Gravity-Hub-Org/gravity-node-api-mockup/v2 v2.0.0-20200714121546-25953225318e/go.mod h1:HyHMxLuCiL2ZlBZaVk255fQzSV81u/HdU/UMlAanLo8=
+github.com/Gravity-Hub-Org/gravity-node-api-mockup/v2 v2.0.0-20200720112743-2a9c234e9c0a h1:IuLbs1QRlFdg0TZajcdCSwsVue2/f1Jd16scEd8A5O8=
+github.com/Gravity-Hub-Org/gravity-node-api-mockup/v2 v2.0.0-20200720112743-2a9c234e9c0a/go.mod h1:HyHMxLuCiL2ZlBZaVk255fQzSV81u/HdU/UMlAanLo8=
 github.com/Gravity-Hub-Org/proof-of-concept v1.0.0 h1:gejAG/rT2cqCKoX1Bs0JQgm9pBhQzANlgSqRnmdcZP4=
 github.com/Gravity-Hub-Org/proof-of-concept v1.0.0/go.mod h1:7yvkO82BlxXOi5riekgzoUEuNmnZvT5/0UE3f+a5lus=
 github.com/Knetic/govaluate v3.0.1-0.20171022003610-9aa49832a739+incompatible/go.mod h1:r7JcOSlj0wfOMncg0iLm8Leh48TZaKVeNIfJntJ2wa0=
