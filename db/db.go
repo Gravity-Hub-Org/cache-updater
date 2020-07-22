@@ -5,10 +5,8 @@ import (
 	"cache-updater/keys"
 	"encoding/json"
 	"fmt"
-	"strconv"
-	"time"
-
 	"github.com/Gravity-Hub-Org/gravity-node-api-mockup/v2/model"
+	"strconv"
 
 	"github.com/go-pg/pg/v10"
 )
@@ -40,21 +38,25 @@ func (helper *DBHelper) Nebulae() ([]model.Nebula, error) {
 			}
 			score /= len(nodes)
 
+			fee := ""
 			var chainType model.ChainType
 			switch k {
 			case cacher.Waves:
 				chainType = model.WAVES_TARGET_CHAIN
+				fee = "100000000"
 			case cacher.Ethereum:
 				chainType = model.ETH_TARGET_CHAIN
+				fee = "700000"
 			}
+
 
 			nebulae = append(nebulae, model.Nebula{
 				Address:         nebula,
 				Status:          model.NebulaActiveStatus,
-				Name:            fmt.Sprintf("Test Nebula #%d", i + chainType),
+				Name:            fmt.Sprintf("Demo Nebula #%d", i + chainType + 1),
 				Score:           model.Score(score),
-				Description:     "A demo network test nebula that provides BTC/USD price data.",
-				SubscriptionFee: "10",
+				Description:     "A demo network precofigured smart contract that provides BTC/USD price data.",
+				SubscriptionFee: fee,
 				NodesUsing:      nodes,
 				Regularity:      1,
 				TargetChain:     chainType,
@@ -94,40 +96,90 @@ func (helper *DBHelper) Nodes() ([]model.Node, error) {
 			}
 		}
 
-		nodes = append(nodes, model.Node{
-			Address:       address,
-			Name:          fmt.Sprintf("Test Node #%d", i),
-			Score:         model.Score(vScore),
-			Description:   "Test nebula",
-			DepositAmount: 1000,
-			DepositChain:  model.WAVES_TARGET_CHAIN,
-			JoinedAt:      time.Now().Unix(),
-			LockedUntil:   time.Now().Unix(),
-			NebulasUsing:  nebulae,
-		})
+
+		switch i {
+		case 0:
+			nodes = append(nodes, model.Node{
+				Address:       address,
+				Name:          "#1 - Neutrino Demo Node",
+				Score:         model.Score(vScore),
+				Description:   "Test node provided by Neutrino Protocol.",
+				DepositAmount: 1000,
+				DepositChain:  model.ETH_TARGET_CHAIN,
+				JoinedAt:      1595192400,
+				LockedUntil:   0,
+				NebulasUsing:  nebulae,
+			})
+		case 1:
+			nodes = append(nodes, model.Node{
+				Address:       address,
+				Name:          "#2 - Band Demo Node",
+				Score:         model.Score(vScore),
+				Description:   "Test node provided by Band Protocol",
+				DepositAmount: 7,
+				DepositChain:  model.ETH_TARGET_CHAIN,
+				JoinedAt:      1595192400,
+				LockedUntil:   0,
+				NebulasUsing:  nebulae,
+			})
+		case 2:
+			nodes = append(nodes, model.Node{
+				Address:       address,
+				Name:          "#3 - VenLab Demo Node",
+				Score:         model.Score(vScore),
+				Description:   "Test node provided by Ventuary Lab",
+				DepositAmount: 7,
+				DepositChain:  model.ETH_TARGET_CHAIN,
+				JoinedAt:      1595192400,
+				LockedUntil:   1595192400,
+				NebulasUsing:  nebulae,
+			})
+		case 3:
+			nodes = append(nodes, model.Node{
+				Address:       address,
+				Name:          "#4 - Gravity Demo Node",
+				Score:         model.Score(vScore),
+				Description:   "Test node provided by Gravity Protocol",
+				DepositAmount: 1000,
+				DepositChain:  model.WAVES_TARGET_CHAIN,
+				JoinedAt:      1595192400,
+				LockedUntil:   1595192400,
+				NebulasUsing:  nebulae,
+			})
+		case 4:
+			nodes = append(nodes, model.Node{
+				Address:       address,
+				Name:          "#5 - WX Demo Node",
+				Score:         model.Score(vScore),
+				Description:   "Test node provided by Waves.Exchange",
+				DepositAmount: 1000,
+				DepositChain:  model.WAVES_TARGET_CHAIN,
+				JoinedAt:      1595192400,
+				LockedUntil:   1595192400,
+				NebulasUsing:  nebulae,
+			})
+		}
 	}
 
 	return nodes, nil
 }
 
-func (helper *DBHelper) CommonStatus() (model.CommonStats, error) {
-	var status model.CommonStats
+func (helper *DBHelper) CommonStatus() (pulses uint, nodeCount uint, err error) {
 	consulsData := new([]cacher.DataLog)
 	v, err := helper.Db.Model(consulsData).Where("key like ?", keys.PulseKey+"%").SelectAndCount()
 	if err != nil {
-		return model.CommonStats{}, err
+		return 0,0, err
 	}
 
-	status.Pulses = uint(v)
-	status.DataFeeds = 2
+	pulses = uint(v)
 
 	nodes, err := helper.nodeAddresses()
 	if err != nil {
-		return status, err
+		return 0,0, err
 	}
 
-	status.NodesCount = uint(len(nodes))
-	return status, nil
+	nodeCount = uint(len(nodes))
+	return pulses,nodeCount, err
 }
 
 func (helper *DBHelper) nodeAddresses() ([]string, error) {

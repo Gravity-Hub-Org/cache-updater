@@ -20,48 +20,89 @@ type PGDBConsumer struct {
 	timeout time.Duration
 }
 
-func (c *PGDBConsumer) consume () {
-	nebulas, _ := c.consumerDBHelper.Nebulae()
-	nodes, _ := c.consumerDBHelper.Nodes()
+// swagger:model
+type DataFeeds struct {
+	tableName struct{} `sql:"data_feeds"`
+
+	// Data feed tag for distinct usage
+	//
+	// required: true
+	DataFeedTag string `json:"datafeed_tag" pg:"data_feed_tag"`
+
+	// Common extractor description
+	//
+	// required: true
+	Description string `json:"description"`
+}
+
+func (c *PGDBConsumer) consume () error {
+	nebulas, err := c.consumerDBHelper.Nebulae()
+	if err != nil {
+		return err
+	}
+
+	nodes, err := c.consumerDBHelper.Nodes()
+	if err != nil {
+		return err
+	}
+
+	pulses, nodeCount, err := c.consumerDBHelper.CommonStatus()
+	if err != nil {
+		return err
+	}
 
 	for _, nebula := range nebulas {
-		searchNebula := new(model.Nebula)
-		c.DestinationDB.Model(searchNebula).Where("address = ?", nebula.Address).Select()
+		_, err := c.DestinationDB.Model(new(model.Nebula)).Where("address = ?", nebula.Address).Delete()
+		if err != nil {
+			return err
+		}
 
-		if searchNebula.Address == "" {
-			err := c.DestinationDB.Insert(&nebula)
-			if err != nil {
-				println(err.Error())
-			}
-		} else {
-			_, err := c.DestinationDB.Model(searchNebula).Where("address = ?", nebula.Address).Update(&nebula)
-			if err != nil {
-				println(err.Error())
-			}
+		err = c.DestinationDB.Insert(&nebula)
+		if err != nil {
+			return err
 		}
 	}
 
 	for _, node := range nodes {
-		searchNode := new(model.Node)
-		c.DestinationDB.Model(searchNode).Where("address = ?", node.Address).Select()
+		_, err := c.DestinationDB.Model(new(model.Node)).Where("address = ?", node.Address).Delete()
+		if err != nil {
+			return err
+		}
 
-		if searchNode.Address == "" {
-			err := c.DestinationDB.Insert(&node)
-			if err != nil {
-				println(err.Error())
-			}
-		} else {
-			_, err := c.DestinationDB.Model(searchNode).Where("address = ?", node.Address).Update(&node)
-			if err != nil {
-				println(err.Error())
-			}
+		err = c.DestinationDB.Insert(&node)
+		if err != nil {
+			return err
 		}
 	}
+
+	_, err = c.DestinationDB.Model(new(model.CommonStats)).Where("true").ForceDelete()
+	if err != nil {
+		return err
+	}
+
+	dataFeedsCount, err := c.DestinationDB.Model(new(DataFeeds)).Count()
+	if err != nil {
+		return err
+	}
+
+	err = c.DestinationDB.Insert(&model.CommonStats{
+		NodesCount: nodeCount,
+		Pulses:     pulses,
+		DataFeeds:  uint(dataFeedsCount),
+	})
+	if err != nil {
+		return err
+	}
+
+	return nil
 
 }
 
 func (c *PGDBConsumer) startConsume () {
-	c.consume()
+	err := c.consume()
+	if err != nil {
+		println(err.Error())
+	}
 	
 	time.AfterFunc(3*time.Second, c.startConsume)
 }
